@@ -298,6 +298,32 @@ const styles = `
   color: var(--text);
 }
 
+.upload-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.upload-btn:hover {
+  background: #f0f2f8;
+  color: var(--text);
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .emoji-picker {
   position: absolute;
   bottom: 100%;
@@ -712,6 +738,105 @@ export const longChatPane = {
       emojiPicker.classList.toggle('open')
     }
     inputArea.appendChild(emojiBtn)
+
+    // Upload button
+    const uploadBtn = dom.createElement('button')
+    uploadBtn.className = 'upload-btn'
+    uploadBtn.textContent = '📎'
+    uploadBtn.type = 'button'
+    uploadBtn.title = 'Upload image/file'
+    inputArea.appendChild(uploadBtn)
+
+    // Hidden file input
+    const fileInput = dom.createElement('input')
+    fileInput.type = 'file'
+    fileInput.accept = 'image/*,video/*,audio/*'
+    fileInput.style.display = 'none'
+    inputArea.appendChild(fileInput)
+
+    uploadBtn.onclick = () => fileInput.click()
+
+    // File upload handler
+    fileInput.onchange = async () => {
+      const file = fileInput.files[0]
+      if (!file) return
+
+      // Re-check current user (may have logged in after pane loaded)
+      const authnCheck = context.session?.logic?.authn || globalThis.SolidLogic?.authn
+      const uploadUser = authnCheck?.currentUser()?.value || currentUser
+
+      // Check if logged in
+      if (!uploadUser) {
+        alert('Please log in to upload files')
+        fileInput.value = ''
+        return
+      }
+
+      // Disable button during upload
+      uploadBtn.disabled = true
+      uploadBtn.textContent = '⏳'
+
+      try {
+        // Extract pod root from WebID (e.g., https://user.solidweb.org/profile/card#me -> https://user.solidweb.org/)
+        const webIdUrl = new URL(uploadUser)
+        const podRoot = `${webIdUrl.protocol}//${webIdUrl.host}/`
+
+        // Create unique filename with timestamp
+        const timestamp = Date.now()
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const uploadPath = `${podRoot}public/chat-uploads/${timestamp}-${safeName}`
+
+        // Upload file using fetch with credentials
+        const response = await fetch(uploadPath, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream'
+          },
+          body: file,
+          credentials: 'include'
+        })
+
+        if (!response.ok) {
+          // Try to create container first
+          if (response.status === 404 || response.status === 409) {
+            const containerPath = `${podRoot}public/chat-uploads/`
+            await fetch(containerPath, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'text/turtle' },
+              body: '',
+              credentials: 'include'
+            })
+            // Retry upload
+            const retry = await fetch(uploadPath, {
+              method: 'PUT',
+              headers: { 'Content-Type': file.type || 'application/octet-stream' },
+              body: file,
+              credentials: 'include'
+            })
+            if (!retry.ok) {
+              throw new Error(`Upload failed: ${retry.status} ${retry.statusText}`)
+            }
+          } else {
+            throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+          }
+        }
+
+        // Insert URL into message input
+        const currentText = input.value
+        input.value = currentText + (currentText ? ' ' : '') + uploadPath
+        input.dispatchEvent(new Event('input'))
+        input.focus()
+
+      } catch (err) {
+        console.error('Upload error:', err)
+        alert('Failed to upload file: ' + err.message)
+      }
+
+      // Reset
+      uploadBtn.disabled = false
+      uploadBtn.textContent = '📎'
+      fileInput.value = ''
+    }
 
     const inputWrapper = dom.createElement('div')
     inputWrapper.className = 'input-wrapper'
