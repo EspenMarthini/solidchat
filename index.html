@@ -472,6 +472,104 @@ function createContext(uri) {
   }
 }
 
+// WebSocket for real-time updates
+let currentWebSocket = null
+let currentChatUri = null
+let reconnectTimeout = null
+
+// Subscribe to real-time updates for a resource
+async function subscribeToUpdates(uri) {
+  // Close existing connection
+  if (currentWebSocket) {
+    currentWebSocket.close()
+    currentWebSocket = null
+  }
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout)
+    reconnectTimeout = null
+  }
+
+  try {
+    // Fetch the resource to get Updates-Via header
+    const authFetch = getAuthFetch()
+    const response = await authFetch(uri, { method: 'HEAD' })
+    const updatesVia = response.headers.get('Updates-Via')
+
+    if (!updatesVia) {
+      console.log('No Updates-Via header, real-time updates not available')
+      return
+    }
+
+    console.log('Subscribing to updates via:', updatesVia)
+
+    // Connect to WebSocket
+    currentWebSocket = new WebSocket(updatesVia, ['solid-0.1'])
+    currentChatUri = uri
+
+    currentWebSocket.onopen = () => {
+      console.log('WebSocket connected')
+      // Subscribe to the resource
+      currentWebSocket.send(`sub ${uri}`)
+    }
+
+    currentWebSocket.onmessage = (event) => {
+      const data = event.data
+      console.log('WebSocket message:', data)
+
+      // Check if it's a pub notification for our resource
+      if (data.startsWith('pub ')) {
+        const updatedUri = data.slice(4).trim()
+        if (updatedUri === uri || uri.startsWith(updatedUri)) {
+          console.log('Chat updated, refreshing...')
+          // Small delay to let server finish writing
+          setTimeout(() => refreshChat(), 500)
+        }
+      }
+    }
+
+    currentWebSocket.onclose = () => {
+      console.log('WebSocket closed')
+      // Attempt reconnect after 5 seconds
+      if (currentChatUri === uri) {
+        reconnectTimeout = setTimeout(() => {
+          console.log('Attempting to reconnect...')
+          subscribeToUpdates(uri)
+        }, 5000)
+      }
+    }
+
+    currentWebSocket.onerror = (err) => {
+      console.error('WebSocket error:', err)
+    }
+
+  } catch (err) {
+    console.error('Failed to subscribe to updates:', err)
+  }
+}
+
+// Refresh current chat without full reload
+async function refreshChat() {
+  if (!currentChatUri) return
+
+  const uri = currentChatUri
+  try {
+    // Clear the store cache for this document
+    const doc = $rdf.sym(uri).doc()
+    store.removeMatches(null, null, null, doc)
+
+    const subject = $rdf.sym(uri)
+    const context = createContext(uri)
+
+    // Re-render the pane
+    chatContainer.innerHTML = ''
+    const element = longChatPane.render(subject, context)
+    chatContainer.appendChild(element)
+
+  } catch (err) {
+    console.error('Error refreshing chat:', err)
+  }
+}
+
 // Load chat function
 async function loadChat(uri) {
   if (!uri) {
@@ -507,6 +605,10 @@ async function loadChat(uri) {
 
     const element = longChatPane.render(subject, context)
     chatContainer.appendChild(element)
+
+    // Subscribe to real-time updates
+    currentChatUri = uri
+    subscribeToUpdates(uri)
 
   } catch (err) {
     console.error('Error loading chat:', err)
