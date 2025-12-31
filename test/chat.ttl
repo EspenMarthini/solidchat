@@ -1,0 +1,107 @@
+@prefix : <#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix flow: <http://www.w3.org/2005/01/wf/flow#>.
+@prefix sioc: <http://rdfs.org/sioc/ns#>.
+@prefix dct: <http://purl.org/dc/terms/>.
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix meeting: <http://www.w3.org/ns/pim/meeting#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+<#this>
+    rdf:type meeting:LongChat ;
+    dct:title "SolidOS Dev Chat" ;
+    dct:created "2024-12-30T09:00:00Z"^^xsd:dateTime ;
+    flow:message :msg1, :msg2, :msg3, :msg4, :msg5, :msg6, :msg7, :msg8, :msg9, :msg10, :msg11, :msg12 .
+
+# Tim starts the conversation
+:msg1
+    rdf:type flow:Message ;
+    sioc:content "Good morning everyone! Ready for today's sprint?" ;
+    dct:created "2024-12-30T09:00:00Z"^^xsd:dateTime ;
+    foaf:maker <https://timbl.solidcommunity.net/profile/card#me> .
+
+<https://timbl.solidcommunity.net/profile/card#me> foaf:name "Tim Berners-Lee" .
+
+# Melvin responds
+:msg2
+    rdf:type flow:Message ;
+    sioc:content "Morning Tim! Yes, I've been working on the new chat pane." ;
+    dct:created "2024-12-30T09:02:00Z"^^xsd:dateTime ;
+    foaf:maker <https://melvin.solid.social/profile/card#me> .
+
+<https://melvin.solid.social/profile/card#me> foaf:name "Melvin Carvalho" .
+
+# Tim replies
+:msg3
+    rdf:type flow:Message ;
+    sioc:content "Excellent! How's the WhatsApp-style UI coming along?" ;
+    dct:created "2024-12-30T09:03:00Z"^^xsd:dateTime ;
+    foaf:maker <https://timbl.solidcommunity.net/profile/card#me> .
+
+# Alain joins
+:msg4
+    rdf:type flow:Message ;
+    sioc:content "Hey all! Just catching up on the thread. The chat pane looks promising!" ;
+    dct:created "2024-12-30T09:05:00Z"^^xsd:dateTime ;
+    foaf:maker <https://bourgeoa.solidcommunity.net/profile/card#me> .
+
+<https://bourgeoa.solidcommunity.net/profile/card#me> foaf:name "Alain Bourgeois" .
+
+# Melvin explains
+:msg5
+    rdf:type flow:Message ;
+    sioc:content "Thanks! It's using vanilla JS and renders RDF chat data in a modern messenger style. No React needed." ;
+    dct:created "2024-12-30T09:07:00Z"^^xsd:dateTime ;
+    foaf:maker <https://melvin.solid.social/profile/card#me> .
+
+# Jeff joins
+:msg6
+    rdf:type flow:Message ;
+    sioc:content "Nice work! Does it support both ShortChat and LongChat formats?" ;
+    dct:created "2024-12-30T09:10:00Z"^^xsd:dateTime ;
+    foaf:maker <https://jeff-zucker.solidcommunity.net/profile/card#me> .
+
+<https://jeff-zucker.solidcommunity.net/profile/card#me> foaf:name "Jeff Zucker" .
+
+# Melvin answers
+:msg7
+    rdf:type flow:Message ;
+    sioc:content "Yes! It first tries to load inline messages, then falls back to traversing LDP containers for LongChat." ;
+    dct:created "2024-12-30T09:12:00Z"^^xsd:dateTime ;
+    foaf:maker <https://melvin.solid.social/profile/card#me> .
+
+# Tim is excited
+:msg8
+    rdf:type flow:Message ;
+    sioc:content "This is exactly what we need. The current chat pane could use a refresh." ;
+    dct:created "2024-12-30T09:15:00Z"^^xsd:dateTime ;
+    foaf:maker <https://timbl.solidcommunity.net/profile/card#me> .
+
+# Alain asks a question
+:msg9
+    rdf:type flow:Message ;
+    sioc:content "Can it be used standalone or does it need the full mashlib?" ;
+    dct:created "2024-12-30T09:18:00Z"^^xsd:dateTime ;
+    foaf:maker <https://bourgeoa.solidcommunity.net/profile/card#me> .
+
+# Melvin answers
+:msg10
+    rdf:type flow:Message ;
+    sioc:content "Standalone! Just needs rdflib. The demo page loads it from CDN and works independently." ;
+    dct:created "2024-12-30T09:20:00Z"^^xsd:dateTime ;
+    foaf:maker <https://melvin.solid.social/profile/card#me> .
+
+# Jeff suggests
+:msg11
+    rdf:type flow:Message ;
+    sioc:content "We should test it with the SolidOS team chat. That's a good real-world example." ;
+    dct:created "2024-12-30T09:22:00Z"^^xsd:dateTime ;
+    foaf:maker <https://jeff-zucker.solidcommunity.net/profile/card#me> .
+
+# Tim wraps up
+:msg12
+    rdf:type flow:Message ;
+    sioc:content "Great progress everyone! Let's sync again tomorrow. 🚀" ;
+    dct:created "2024-12-30T09:25:00Z"^^xsd:dateTime ;
+    foaf:maker <https://timbl.solidcommunity.net/profile/card#me> .
