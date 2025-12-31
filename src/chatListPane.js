@@ -20,6 +20,14 @@ const MEETING = {
 // Storage key for localStorage
 const STORAGE_KEY = 'solidchat-chats'
 
+// Default global chat
+const DEFAULT_CHAT = {
+  uri: 'https://solid-chat.solidcommunity.net/public/global/chat.ttl',
+  title: 'Solid Chat Global',
+  lastMessage: 'Welcome to the global chat!',
+  timestamp: '2025-12-31T09:00:00Z'
+}
+
 // CSS styles
 const styles = `
 .chat-list-pane {
@@ -355,6 +363,20 @@ function loadChatList() {
     console.warn('Failed to load chat list:', e)
     chatList = []
   }
+
+  // Add default global chat if list is empty
+  if (chatList.length === 0) {
+    chatList.push({ ...DEFAULT_CHAT })
+    saveChatList()
+  }
+
+  // Ensure default chat exists in list
+  const hasDefault = chatList.some(c => c.uri === DEFAULT_CHAT.uri)
+  if (!hasDefault) {
+    chatList.unshift({ ...DEFAULT_CHAT })
+    saveChatList()
+  }
+
   return chatList
 }
 

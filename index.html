@@ -633,6 +633,9 @@ async function loadChat(uri) {
   }
 }
 
+// Default global chat
+const DEFAULT_CHAT_URI = 'https://solid-chat.solidcommunity.net/public/global/chat.ttl'
+
 // Initialize: handle auth redirect first, then render sidebar
 async function init() {
   // Handle auth redirect callback (if returning from IdP)
@@ -654,12 +657,10 @@ async function init() {
   })
   sidebar.appendChild(sidebarElement)
 
-  // Check for URI in query string
+  // Check for URI in query string, or load default global chat
   const params = new URLSearchParams(window.location.search)
-  const initialUri = params.get('uri')
-  if (initialUri) {
-    loadChat(initialUri)
-  }
+  const initialUri = params.get('uri') || DEFAULT_CHAT_URI
+  loadChat(initialUri)
 }
 
 init()
