@@ -235,7 +235,7 @@
     <p>Decentralized messaging for the web</p>
   </div>
   <div id="headerLoginArea" style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-    <button id="soundToggle" onclick="toggleSound()" title="Toggle notification sound" style="background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px;">🔔</button>
+    <button id="soundToggle" title="Toggle notification sound" style="background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px;">🔔</button>
     <span id="userStatus" style="font-size: 13px; opacity: 0.9;">Loading...</span>
     <span id="loginArea"></span>
   </div>
@@ -724,6 +724,7 @@ const DEFAULT_CHAT_URI = 'https://solid-chat.solidcommunity.net/public/global/ch
 async function init() {
   // Set initial sound button state
   updateSoundButton()
+  document.getElementById('soundToggle').addEventListener('click', toggleSound)
 
   // Handle auth redirect callback (if returning from IdP)
   await handleAuthRedirect()
