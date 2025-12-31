@@ -634,28 +634,52 @@ function connectLegacyWebSocket(updatesVia, uri) {
   }
 }
 
+// Debounce helper
+function debounce(fn, delay) {
+  let timeout
+  return function(...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
+
+// Current pane element (for incremental refresh)
+let currentPane = null
+
 // Refresh current chat without full reload
-async function refreshChat() {
+async function doRefreshChat() {
   if (!currentChatUri) return
 
+  // Use incremental refresh if pane supports it
+  if (currentPane && currentPane.refresh) {
+    try {
+      await currentPane.refresh()
+    } catch (err) {
+      console.error('Error refreshing chat:', err)
+    }
+    return
+  }
+
+  // Fallback to full re-render
   const uri = currentChatUri
   try {
-    // Clear the store cache for this document
     const doc = $rdf.sym(uri).doc()
     store.removeMatches(null, null, null, doc)
 
     const subject = $rdf.sym(uri)
     const context = createContext(uri)
 
-    // Re-render the pane
     chatContainer.innerHTML = ''
-    const element = longChatPane.render(subject, context)
-    chatContainer.appendChild(element)
+    currentPane = longChatPane.render(subject, context)
+    chatContainer.appendChild(currentPane)
 
   } catch (err) {
     console.error('Error refreshing chat:', err)
   }
 }
+
+// Debounced version - prevents rapid re-renders
+const refreshChat = debounce(doRefreshChat, 300)
 
 // Load chat function
 async function loadChat(uri) {
@@ -686,6 +710,7 @@ async function loadChat(uri) {
 
     // Clear container and render pane
     chatContainer.innerHTML = ''
+    currentPane = null
 
     // Check if pane applies
     const label = longChatPane.label(subject, context)
@@ -694,8 +719,8 @@ async function loadChat(uri) {
       console.log('Pane label returned null, but rendering anyway for demo')
     }
 
-    const element = longChatPane.render(subject, context)
-    chatContainer.appendChild(element)
+    currentPane = longChatPane.render(subject, context)
+    chatContainer.appendChild(currentPane)
 
     // Add to chat list (will also set as active)
     addChat(uri)

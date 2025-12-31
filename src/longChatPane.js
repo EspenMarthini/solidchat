@@ -624,7 +624,9 @@ export const longChatPane = {
 
     // State
     let messages = []
+    let renderedUris = new Set()
     let currentUser = null
+    let isFirstLoad = true
 
     // Get current user
     const authn = context.session?.logic?.authn || globalThis.SolidLogic?.authn
@@ -634,9 +636,10 @@ export const longChatPane = {
 
     // Load messages from store
     async function loadMessages() {
-      statusEl.textContent = 'Loading messages...'
-      messagesContainer.innerHTML = ''
-      messages = []
+      if (isFirstLoad) {
+        statusEl.textContent = 'Loading messages...'
+        messagesContainer.innerHTML = ''
+      }
 
       try {
         // Define namespaces
@@ -665,6 +668,7 @@ export const longChatPane = {
 
         // Extract all messages with sioc:content from this document
         const contentStatements = store.statementsMatching(null, SIOC('content'), null, doc)
+        const newMessages = []
 
         for (const st of contentStatements) {
           const msgNode = st.subject
@@ -688,7 +692,7 @@ export const longChatPane = {
                         'Unknown'
           }
 
-          messages.push({
+          newMessages.push({
             uri: msgNode.value,
             content,
             date: date ? new Date(date) : new Date(),
@@ -698,45 +702,67 @@ export const longChatPane = {
         }
 
         // Sort by date
-        messages.sort((a, b) => (a.date || 0) - (b.date || 0))
+        newMessages.sort((a, b) => (a.date || 0) - (b.date || 0))
 
         // Keep only last 100 messages for performance
-        if (messages.length > 100) {
-          messages = messages.slice(-100)
-        }
+        const allMessages = newMessages.slice(-100)
 
-        // Render messages
-        if (messages.length === 0) {
-          const empty = dom.createElement('div')
-          empty.className = 'empty-chat'
-          empty.innerHTML = '<div class="empty-chat-icon">💬</div><div>No messages yet</div><div>Be the first to say hello!</div>'
-          messagesContainer.appendChild(empty)
-        } else {
-          for (const msg of messages) {
+        // Find messages that haven't been rendered yet
+        const unrenderedMessages = allMessages.filter(m => !renderedUris.has(m.uri))
+
+        // Render only new messages (or all on first load)
+        if (isFirstLoad) {
+          if (allMessages.length === 0) {
+            const empty = dom.createElement('div')
+            empty.className = 'empty-chat'
+            empty.innerHTML = '<div class="empty-chat-icon">💬</div><div>No messages yet</div><div>Be the first to say hello!</div>'
+            messagesContainer.appendChild(empty)
+          } else {
+            for (const msg of allMessages) {
+              const isOwn = currentUser && msg.authorUri === currentUser
+              const el = createMessageElement(dom, msg, isOwn)
+              messagesContainer.appendChild(el)
+              renderedUris.add(msg.uri)
+            }
+          }
+          isFirstLoad = false
+        } else if (unrenderedMessages.length > 0) {
+          // Remove empty state if present
+          const empty = messagesContainer.querySelector('.empty-chat')
+          if (empty) empty.remove()
+
+          // Append only new messages
+          for (const msg of unrenderedMessages) {
             const isOwn = currentUser && msg.authorUri === currentUser
             const el = createMessageElement(dom, msg, isOwn)
             messagesContainer.appendChild(el)
+            renderedUris.add(msg.uri)
           }
         }
 
+        messages = allMessages
         statusEl.textContent = `${messages.length} messages`
 
-        // Scroll to bottom
-        messagesContainer.scrollTop = messagesContainer.scrollHeight
+        // Scroll to bottom only if there are new messages
+        if (isFirstLoad || unrenderedMessages.length > 0) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
 
-        // Load avatars asynchronously
-        const uniqueWebIds = [...new Set(messages.map(m => m.authorUri).filter(Boolean))]
-        for (const webId of uniqueWebIds) {
-          fetchAvatar(webId, store, $rdf).then(avatarUrl => {
+        // Load avatars in parallel (only for new messages)
+        const newWebIds = [...new Set(unrenderedMessages.map(m => m.authorUri).filter(Boolean))]
+        const uniqueWebIds = isFirstLoad ? [...new Set(messages.map(m => m.authorUri).filter(Boolean))] : newWebIds
+        Promise.all(uniqueWebIds.map(webId =>
+          fetchAvatar(webId, store, $rdf).then(avatarUrl => ({ webId, avatarUrl }))
+        )).then(results => {
+          results.forEach(({ webId, avatarUrl }) => {
             if (avatarUrl) {
-              // Update all avatars for this WebID
               const avatars = messagesContainer.querySelectorAll(`.message-avatar[data-webid="${webId}"]`)
               avatars.forEach(el => {
                 el.innerHTML = `<img src="${avatarUrl}" alt="" />`
               })
             }
           })
-        }
+        })
 
       } catch (err) {
         console.error('Error loading chat:', err)
@@ -826,6 +852,14 @@ export const longChatPane = {
     })
 
     sendBtn.addEventListener('click', sendMessage)
+
+    // Expose refresh method for incremental updates
+    container.refresh = async function() {
+      // Re-fetch the document
+      const doc = subject.doc ? subject.doc() : subject
+      await store.fetcher.load(doc, { force: true })
+      await loadMessages()
+    }
 
     // Initial load
     loadMessages()
