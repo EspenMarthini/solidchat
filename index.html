@@ -50,147 +50,58 @@
     .app-header {
       background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
       color: white;
-      padding: 20px 24px;
+      padding: 16px 24px;
       box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
     .app-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .app-header p {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       opacity: 0.9;
+    }
+
+    .app-header button {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .app-header button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .app-header input {
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      width: 140px;
+    }
+
+    .app-header input::placeholder {
+      color: rgba(255,255,255,0.7);
     }
 
     .container {
       max-width: 900px;
       margin: 0 auto;
       padding: 24px;
-    }
-
-    .controls {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1), 0 2px 8px rgba(0,0,0,0.04);
-    }
-
-    .controls label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-
-    .input-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .controls input[type="text"] {
-      flex: 1;
-      padding: 12px 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 14px;
-      font-family: inherit;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      background: #f7f8fc;
-    }
-
-    .controls input[type="text"]:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(128, 90, 213, 0.1);
-    }
-
-    .controls button {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-    }
-
-    .controls button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
-    }
-
-    .controls button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .user-status {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .user-status strong {
-      color: var(--accent);
-    }
-
-    #loginArea {
-      display: flex;
-      gap: 8px;
-    }
-
-    #loginArea button {
-      padding: 8px 16px;
-      font-size: 13px;
-    }
-
-    .quick-links {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #eee;
-    }
-
-    .quick-links-label {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
-    .quick-link {
-      display: inline-block;
-      padding: 8px 14px;
-      margin: 4px 4px 4px 0;
-      background: linear-gradient(135deg, #f0f2f8 0%, #e8eaf2 100%);
-      color: var(--text);
-      text-decoration: none;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid #e2e8f0;
-    }
-
-    .quick-link:hover {
-      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-      color: white;
-      border-color: transparent;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
 
     #chatContainer {
@@ -243,44 +154,121 @@
       border-radius: 8px;
       margin-top: 16px;
     }
+
+    /* App layout with sidebar */
+    .app-layout {
+      display: flex;
+      height: calc(100vh - 68px);
+    }
+
+    .sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+
+    .main-content .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Mobile hamburger */
+    .mobile-menu-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -320px;
+        height: 100vh;
+        z-index: 100;
+        transition: left 0.3s ease;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      .app-layout {
+        height: calc(100vh - 68px);
+      }
+
+      .main-content {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
 
 <header class="app-header">
-  <h1>Solid Chat</h1>
-  <p>Decentralized messaging for the web</p>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+  <div>
+    <h1>Solid Chat</h1>
+    <p>Decentralized messaging for the web</p>
+  </div>
+  <div id="headerLoginArea" style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+    <span id="userStatus" style="font-size: 13px; opacity: 0.9;">Loading...</span>
+    <span id="loginArea"></span>
+  </div>
 </header>
 
-<div class="container">
-  <div class="controls">
-    <label for="chatUri">Chat Resource URI</label>
-    <div class="input-row">
-      <input type="text" id="chatUri" placeholder="https://pod.example/chat/general.ttl" />
-      <button id="loadBtn">Load Chat</button>
-    </div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div class="status-row">
-      <div class="user-status">
-        Status: <strong id="userStatus">Loading...</strong>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main-content">
+    <div class="container">
+      <div id="chatContainer">
+        <div class="placeholder" id="placeholder">
+          <div class="placeholder-icon">💬</div>
+          <h2>Welcome to Solid Chat</h2>
+          <p>Select a chat from the sidebar<br>or add a new one with the + button.</p>
+        </div>
       </div>
-      <div id="loginArea"></div>
     </div>
-
-    <div class="quick-links">
-      <div class="quick-links-label">Example chats:</div>
-      <a class="quick-link" data-uri="https://solidos.solidcommunity.net/Team/SolidOs%20team%20chat/2022/02/10/chat.ttl">SolidOS Team Chat</a>
-      <a class="quick-link" data-uri="./test/chat.ttl">Local Test Chat</a>
-    </div>
-  </div>
-
-  <div id="chatContainer">
-    <div class="placeholder" id="placeholder">
-      <div class="placeholder-icon">💬</div>
-      <h2>Welcome to Solid Chat</h2>
-      <p>Enter a chat URI above to get started,<br>or click one of the example links.</p>
-    </div>
-  </div>
+  </main>
 </div>
 
 <!-- Load rdflib and Solid auth -->
@@ -289,6 +277,7 @@
 
 <script type="module">
 import { longChatPane } from './src/longChatPane.js'
+import { chatListPane, addChat, updateChatPreview } from './src/chatListPane.js'
 
 // Wait for libraries to be available
 async function waitForLibraries() {
@@ -308,12 +297,24 @@ await waitForLibraries()
 const { login, logout, handleIncomingRedirect, getDefaultSession } = solidClientAuthentication
 
 // DOM elements
-const chatUriInput = document.getElementById('chatUri')
-const loadBtn = document.getElementById('loadBtn')
 const chatContainer = document.getElementById('chatContainer')
 const placeholder = document.getElementById('placeholder')
 const userStatus = document.getElementById('userStatus')
 const loginArea = document.getElementById('loginArea')
+const sidebar = document.getElementById('sidebar')
+const mobileMenuBtn = document.getElementById('mobileMenuBtn')
+const sidebarOverlay = document.getElementById('sidebarOverlay')
+
+// Mobile menu toggle
+mobileMenuBtn.addEventListener('click', () => {
+  sidebar.classList.toggle('open')
+  sidebarOverlay.classList.toggle('open')
+})
+
+sidebarOverlay.addEventListener('click', () => {
+  sidebar.classList.remove('open')
+  sidebarOverlay.classList.remove('open')
+})
 
 // Auth state
 let currentSession = null
@@ -584,6 +585,10 @@ async function loadChat(uri) {
     uri = new URL(uri, window.location.href).href
   }
 
+  // Close mobile sidebar if open
+  sidebar.classList.remove('open')
+  sidebarOverlay.classList.remove('open')
+
   chatContainer.innerHTML = `
     <div class="placeholder">
       <div class="loading-spinner"></div>
@@ -608,6 +613,10 @@ async function loadChat(uri) {
     const element = longChatPane.render(subject, context)
     chatContainer.appendChild(element)
 
+    // Add to chat list (will also set as active)
+    addChat(uri)
+    chatListPane.setActiveChat(uri)
+
     // Subscribe to real-time updates
     currentChatUri = uri
     subscribeToUpdates(uri)
@@ -624,32 +633,33 @@ async function loadChat(uri) {
   }
 }
 
-// Event listeners
-loadBtn.addEventListener('click', () => loadChat(chatUriInput.value.trim()))
-
-chatUriInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') loadChat(chatUriInput.value.trim())
-})
-
-document.querySelectorAll('.quick-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault()
-    const uri = link.dataset.uri
-    chatUriInput.value = uri
-    loadChat(uri)
-  })
-})
-
-// Initialize: handle auth redirect first, then load chat
+// Initialize: handle auth redirect first, then render sidebar
 async function init() {
   // Handle auth redirect callback (if returning from IdP)
   await handleAuthRedirect()
 
-  // Check for URI in query string, or load default
+  // Create context for sidebar
+  const sidebarContext = {
+    dom: document,
+    session: {
+      store: store,
+      webId: currentWebId
+    }
+  }
+
+  // Render chat list sidebar
+  const sidebarElement = chatListPane.render(sidebarContext, {
+    onSelectChat: loadChat,
+    webId: currentWebId
+  })
+  sidebar.appendChild(sidebarElement)
+
+  // Check for URI in query string
   const params = new URLSearchParams(window.location.search)
-  const initialUri = params.get('uri') || 'https://solidos.solidcommunity.net/Team/SolidOs%20team%20chat/2022/02/10/chat.ttl'
-  chatUriInput.value = initialUri
-  loadChat(initialUri)
+  const initialUri = params.get('uri')
+  if (initialUri) {
+    loadChat(initialUri)
+  }
 }
 
 init()
