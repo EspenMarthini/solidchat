@@ -26,7 +26,7 @@ const MIME_TYPES = {
   '.ttf': 'font/ttf'
 }
 
-const port = parseInt(process.argv[2]) || 3000
+let port = parseInt(process.argv[2]) || 3333
 
 const server = createServer((req, res) => {
   let filePath = join(ROOT, req.url === '/' ? 'index.html' : req.url)
@@ -61,9 +61,10 @@ const server = createServer((req, res) => {
   }
 })
 
-server.listen(port, () => {
-  const url = `http://localhost:${port}`
-  console.log(`
+function startServer(p) {
+  server.listen(p, () => {
+    const url = `http://localhost:${p}`
+    console.log(`
   ╭─────────────────────────────────────╮
   │                                     │
   │   Solid Chat running at:            │
@@ -73,5 +74,19 @@ server.listen(port, () => {
   │                                     │
   ╰─────────────────────────────────────╯
 `)
-  open(url)
+    open(url)
+  })
+}
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`Port ${port} in use, trying ${port + 1}...`)
+    port++
+    startServer(port)
+  } else {
+    console.error('Server error:', err.message)
+    process.exit(1)
+  }
 })
+
+startServer(port)
