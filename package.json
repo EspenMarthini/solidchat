@@ -1,13 +1,11 @@
 {
   "name": "solid-chat",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Modern chat panes for Solid pods - longChatPane and chatListPane",
   "type": "module",
   "main": "src/index.js",
   "module": "src/index.js",
-  "bin": {
-    "solid-chat": "./bin/cli.js"
-  },
+  "bin": "bin/cli.js",
   "exports": {
     ".": "./src/index.js",
     "./longChatPane": "./src/longChatPane.js",
