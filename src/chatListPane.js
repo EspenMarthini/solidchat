@@ -20,13 +20,21 @@ const MEETING = {
 // Storage key for localStorage
 const STORAGE_KEY = 'solidchat-chats'
 
-// Default global chat
-const DEFAULT_CHAT = {
-  uri: 'https://solid-chat.solidcommunity.net/public/global/chat.ttl',
-  title: 'Solid Chat Global',
-  lastMessage: 'Welcome to the global chat!',
-  timestamp: '2025-12-31T09:00:00Z'
-}
+// Default global chats
+const DEFAULT_CHATS = [
+  {
+    uri: 'https://solid-chat.solidweb.org/public/global/chat.ttl',
+    title: 'Solid Chat Global (solidweb.org)',
+    lastMessage: 'Welcome! Faster server.',
+    timestamp: '2025-12-31T12:00:00Z'
+  },
+  {
+    uri: 'https://solid-chat.solidcommunity.net/public/global/chat.ttl',
+    title: 'Solid Chat Global (solidcommunity.net)',
+    lastMessage: 'Welcome to the global chat!',
+    timestamp: '2025-12-31T09:00:00Z'
+  }
+]
 
 // CSS styles
 const styles = `
@@ -364,18 +372,21 @@ function loadChatList() {
     chatList = []
   }
 
-  // Add default global chat if list is empty
+  // Add default global chats if list is empty
   if (chatList.length === 0) {
-    chatList.push({ ...DEFAULT_CHAT })
+    chatList.push(...DEFAULT_CHATS.map(c => ({ ...c })))
     saveChatList()
   }
 
-  // Ensure default chat exists in list
-  const hasDefault = chatList.some(c => c.uri === DEFAULT_CHAT.uri)
-  if (!hasDefault) {
-    chatList.unshift({ ...DEFAULT_CHAT })
-    saveChatList()
+  // Ensure all default chats exist in list
+  let added = false
+  for (const defaultChat of DEFAULT_CHATS) {
+    if (!chatList.some(c => c.uri === defaultChat.uri)) {
+      chatList.unshift({ ...defaultChat })
+      added = true
+    }
   }
+  if (added) saveChatList()
 
   return chatList
 }
