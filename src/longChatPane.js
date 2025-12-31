@@ -781,11 +781,8 @@ export const longChatPane = {
 
     uploadBtn.onclick = () => fileInput.click()
 
-    // File upload handler
-    fileInput.onchange = async () => {
-      const file = fileInput.files[0]
-      if (!file) return
-
+    // Shared upload function for file input and paste
+    async function uploadFile(file) {
       // Re-check current user (may have logged in after pane loaded)
       const authnCheck = context.session?.logic?.authn || globalThis.SolidLogic?.authn
       const uploadUser = authnCheck?.currentUser()?.value || currentUser
@@ -793,7 +790,6 @@ export const longChatPane = {
       // Check if logged in
       if (!uploadUser) {
         alert('Please log in to upload files')
-        fileInput.value = ''
         return
       }
 
@@ -805,13 +801,13 @@ export const longChatPane = {
         // Get authenticated fetch from context
         const authFetch = context.authFetch ? context.authFetch() : fetch
 
-        // Extract pod root from WebID (e.g., https://user.solidweb.org/profile/card#me -> https://user.solidweb.org/)
+        // Extract pod root from WebID
         const webIdUrl = new URL(uploadUser)
         const podRoot = `${webIdUrl.protocol}//${webIdUrl.host}/`
 
         // Create unique filename with timestamp
         const timestamp = Date.now()
-        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const safeName = (file.name || 'pasted-image.png').replace(/[^a-zA-Z0-9.-]/g, '_')
         const uploadPath = `${podRoot}public/chat-uploads/${timestamp}-${safeName}`
 
         // Upload file using authenticated fetch
@@ -860,6 +856,12 @@ export const longChatPane = {
       // Reset
       uploadBtn.disabled = false
       uploadBtn.textContent = '📎'
+    }
+
+    // File input handler
+    fileInput.onchange = async () => {
+      const file = fileInput.files[0]
+      if (file) await uploadFile(file)
       fileInput.value = ''
     }
 
@@ -1116,6 +1118,20 @@ export const longChatPane = {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         sendMessage()
+      }
+    })
+
+    // Paste image handler
+    input.addEventListener('paste', (e) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          e.preventDefault()
+          const file = item.getAsFile()
+          if (file) uploadFile(file)
+          break
+        }
       }
     })
 
