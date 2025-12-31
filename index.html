@@ -267,7 +267,7 @@
 
     <div class="quick-links">
       <div class="quick-links-label">Example chats:</div>
-      <a class="quick-link" data-uri="https://solidos.solidcommunity.net/Team/SolidOs%20team%20chat/2022/02/09/chat.ttl">SolidOS Team Chat</a>
+      <a class="quick-link" data-uri="https://solidos.solidcommunity.net/Team/SolidOs%20team%20chat/2022/02/10/chat.ttl">SolidOS Team Chat</a>
       <a class="quick-link" data-uri="./test/chat.ttl">Local Test Chat</a>
     </div>
   </div>
@@ -543,7 +543,7 @@ async function init() {
 
   // Check for URI in query string, or load default
   const params = new URLSearchParams(window.location.search)
-  const initialUri = params.get('uri') || 'https://solidos.solidcommunity.net/Team/SolidOs%20team%20chat/2022/02/09/chat.ttl'
+  const initialUri = params.get('uri') || 'https://solidos.solidcommunity.net/Team/SolidOs%20team%20chat/2022/02/10/chat.ttl'
   chatUriInput.value = initialUri
   loadChat(initialUri)
 }
