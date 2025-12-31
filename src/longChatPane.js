@@ -1443,6 +1443,32 @@ export const longChatPane = {
         messages = allMessages
         statusEl.textContent = `${messages.length} messages`
 
+        // Update reactions for already-rendered messages
+        for (const msg of allMessages) {
+          if (msg.reactions) {
+            const reactionsDisplay = messagesContainer.querySelector(`.reactions-display[data-msg-uri="${msg.uri}"]`)
+            if (reactionsDisplay) {
+              const currentHtml = reactionsDisplay.innerHTML
+              let newHtml = ''
+              for (const [emoji, users] of Object.entries(msg.reactions)) {
+                const title = users.map(u => u.split('/').pop().split('#')[0]).join(', ')
+                newHtml += `<div class="reaction-chip"><span class="emoji">${emoji}</span><span class="count">${users.length}</span></div>`
+              }
+              // Only update if changed (avoid flicker)
+              if (reactionsDisplay.innerHTML !== newHtml) {
+                reactionsDisplay.innerHTML = newHtml
+                // Re-add titles
+                const chips = reactionsDisplay.querySelectorAll('.reaction-chip')
+                let i = 0
+                for (const [emoji, users] of Object.entries(msg.reactions)) {
+                  if (chips[i]) chips[i].title = users.map(u => u.split('/').pop().split('#')[0]).join(', ')
+                  i++
+                }
+              }
+            }
+          }
+        }
+
         // Scroll to bottom only if there are new messages
         if (isFirstLoad || unrenderedMessages.length > 0) {
           messagesContainer.scrollTop = messagesContainer.scrollHeight
