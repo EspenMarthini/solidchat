@@ -41,13 +41,11 @@ const styles = `
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   display: flex;
   flex-direction: column;
-  height: 600px;
-  max-height: 80vh;
+  height: 100%;
   border: none;
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
   background: var(--bg-chat);
-  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15), 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .long-chat-pane * {

@@ -98,18 +98,10 @@
       color: rgba(255,255,255,0.7);
     }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
     #chatContainer {
       background: white;
-      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15), 0 2px 8px rgba(0,0,0,0.06);
-      min-height: 400px;
+      height: 100%;
     }
 
     .placeholder {
@@ -117,7 +109,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 400px;
+      height: 100%;
       color: var(--text-muted);
       text-align: center;
     }
@@ -170,14 +162,9 @@
 
     .main-content {
       flex: 1;
-      overflow-y: auto;
+      overflow: hidden;
       background: var(--bg);
-    }
-
-    .main-content .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px;
+      height: 100%;
     }
 
     /* Mobile hamburger */
@@ -259,13 +246,11 @@
   <aside class="sidebar" id="sidebar"></aside>
 
   <main class="main-content">
-    <div class="container">
-      <div id="chatContainer">
-        <div class="placeholder" id="placeholder">
-          <div class="placeholder-icon">💬</div>
-          <h2>Welcome to Solid Chat</h2>
-          <p>Select a chat from the sidebar<br>or add a new one with the + button.</p>
-        </div>
+    <div id="chatContainer">
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">💬</div>
+        <h2>Welcome to Solid Chat</h2>
+        <p>Select a chat from the sidebar<br>or add a new one with the + button.</p>
       </div>
     </div>
   </main>
