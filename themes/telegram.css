@@ -554,4 +554,18 @@
   .app-banner {
     display: none;
   }
+
+  .content-header {
+    position: relative;
+    top: auto;
+    right: auto;
+    height: 56px;
+    background: #0088cc;
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+
+  .right-panel {
+    position: relative;
+  }
 }

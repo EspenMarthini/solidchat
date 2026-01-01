@@ -485,11 +485,24 @@
   }
 
   .app-container {
-    height: calc(100vh - 68px);
+    height: 100vh;
   }
 
   .app-banner {
-    height: 60px;
+    display: none;
+  }
+
+  .content-header {
+    position: relative;
+    top: auto;
+    right: auto;
+    height: 56px;
+    background: linear-gradient(135deg, var(--theme-primary-dark), var(--theme-accent));
     padding: 0 16px;
+    justify-content: space-between;
+  }
+
+  .right-panel {
+    position: relative;
   }
 }

@@ -575,4 +575,18 @@
   .app-banner {
     display: none;
   }
+
+  .content-header {
+    position: relative;
+    top: auto;
+    right: auto;
+    height: 56px;
+    background: var(--theme-primary-dark);
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+
+  .right-panel {
+    position: relative;
+  }
 }
