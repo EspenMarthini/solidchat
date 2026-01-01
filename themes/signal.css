@@ -246,6 +246,22 @@
   flex-direction: column;
 }
 
+.sidebar-footer {
+  padding: 8px 16px;
+  background: var(--bg-panel);
+}
+
+.sidebar-theme-select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+
 /* Right Panel - Chat */
 .right-panel {
   flex: 1;
@@ -574,10 +590,29 @@
     position: relative;
     top: auto;
     right: auto;
-    height: 56px;
+    height: 50px;
     background: #3A76F0;
-    padding: 0 16px;
+    padding: 0 12px;
     justify-content: space-between;
+  }
+
+  .content-header .user-status {
+    display: none;
+  }
+
+  .content-header .theme-switcher {
+    display: none;
+  }
+
+  .content-header .input-field {
+    width: 120px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .content-header .btn-primary {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 
   .right-panel {

@@ -73,6 +73,15 @@
       </div>
 
       <div class="sidebar" id="sidebar"></div>
+
+      <div class="sidebar-footer">
+        <select id="sidebarThemeSelect" class="sidebar-theme-select" title="Switch theme">
+          <option value="wave">Wave</option>
+          <option value="solid">Solid</option>
+          <option value="telegram">Telegram</option>
+          <option value="signal">Signal</option>
+        </select>
+      </div>
     </aside>
 
     <!-- Right Panel - Chat -->
@@ -135,9 +144,11 @@ function loadTheme(themeName) {
   themeLink.href = theme.file
   localStorage.setItem('solidchat-theme', themeName)
 
-  // Update select
+  // Update selects
   const select = document.getElementById('themeSelect')
   if (select) select.value = themeName
+  const sidebarSelect = document.getElementById('sidebarThemeSelect')
+  if (sidebarSelect) sidebarSelect.value = themeName
 
   // Update title based on theme
   const titles = { wave: 'Wave', solid: 'Solid Chat', telegram: 'Telegram', signal: 'Signal' }
@@ -159,6 +170,10 @@ function initTheme() {
   loadTheme(saved)
 
   document.getElementById('themeSelect').addEventListener('change', (e) => {
+    loadTheme(e.target.value)
+  })
+
+  document.getElementById('sidebarThemeSelect').addEventListener('change', (e) => {
     loadTheme(e.target.value)
   })
 }
@@ -921,6 +936,13 @@ async function init() {
     webId: currentWebId
   })
   sidebar.appendChild(sidebarElement)
+
+  // Move theme selector above Discover Chats button
+  const discoverBtn = sidebar.querySelector('.discover-btn')
+  const themeSelect = document.getElementById('sidebarThemeSelect')
+  if (discoverBtn && themeSelect) {
+    discoverBtn.parentNode.insertBefore(themeSelect.parentNode, discoverBtn)
+  }
 
   // Check for ?chat= deep link first, then ?uri= (legacy), then default
   const deepLinkedChat = await handleDeepLink()
