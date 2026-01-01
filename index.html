@@ -128,7 +128,7 @@
 
 <script type="module">
 import { longChatPane } from './src/longChatPane.js'
-import { chatListPane, addChat, updateChatPreview } from './src/chatListPane.js'
+import { chatListPane, addChat, updateChatPreview, incrementUnread, resetUnread } from './src/chatListPane.js'
 
 // Theme management
 const THEMES = {
@@ -500,6 +500,9 @@ async function subscribeWebSocketChannel2023(uri, authFetch) {
       console.log('WebSocketChannel2023 notification:', event.data)
       // Any message means the resource changed
       playNotificationSound()
+      if (document.hidden) {
+        incrementUnread(uri)
+      }
       setTimeout(() => refreshChat(), 500)
     }
 
@@ -537,6 +540,9 @@ function connectLegacyWebSocket(updatesVia, uri) {
       if (updatedUri === uri || uri.startsWith(updatedUri)) {
         console.log('Chat updated, refreshing...')
         playNotificationSound()
+        if (document.hidden) {
+          incrementUnread(uri)
+        }
         setTimeout(() => refreshChat(), 500)
       }
     }
@@ -917,6 +923,14 @@ async function init() {
   // Set initial sound button state
   updateSoundButton()
   document.getElementById('soundToggle').addEventListener('click', toggleSound)
+
+  // Clear unread count when user returns to tab
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && currentChatUri) {
+      resetUnread(currentChatUri)
+      chatListPane.setActiveChat(currentChatUri)
+    }
+  })
 
   // Handle auth redirect callback (if returning from IdP)
   await handleAuthRedirect()

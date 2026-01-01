@@ -19,27 +19,44 @@ const MEETING = {
 
 // Storage key for localStorage
 const STORAGE_KEY = 'solidchat-chats'
-const LASTREAD_KEY = 'solidchat-lastread'
+const UNREAD_KEY = 'solidchat-unread'
 
-// Get last read timestamp for a chat
-function getLastRead(uri) {
+// Get unread count for a chat
+function getUnreadCount(uri) {
   try {
-    const data = JSON.parse(localStorage.getItem(LASTREAD_KEY) || '{}')
+    const data = JSON.parse(localStorage.getItem(UNREAD_KEY) || '{}')
     return data[uri] || 0
   } catch {
     return 0
   }
 }
 
-// Set last read timestamp for a chat
-function setLastRead(uri) {
+// Increment unread count for a chat (call when new message arrives)
+function incrementUnread(uri) {
   try {
-    const data = JSON.parse(localStorage.getItem(LASTREAD_KEY) || '{}')
-    data[uri] = Date.now()
-    localStorage.setItem(LASTREAD_KEY, JSON.stringify(data))
+    const data = JSON.parse(localStorage.getItem(UNREAD_KEY) || '{}')
+    data[uri] = (data[uri] || 0) + 1
+    localStorage.setItem(UNREAD_KEY, JSON.stringify(data))
+    renderChatList()
   } catch (e) {
-    console.warn('Failed to save lastRead:', e)
+    console.warn('Failed to increment unread:', e)
   }
+}
+
+// Reset unread count (call when chat is opened)
+function resetUnread(uri) {
+  try {
+    const data = JSON.parse(localStorage.getItem(UNREAD_KEY) || '{}')
+    data[uri] = 0
+    localStorage.setItem(UNREAD_KEY, JSON.stringify(data))
+  } catch (e) {
+    console.warn('Failed to reset unread:', e)
+  }
+}
+
+// Legacy alias for compatibility
+function setLastRead(uri) {
+  resetUnread(uri)
 }
 
 // Default global chats
@@ -592,13 +609,12 @@ function renderChatList() {
     header.appendChild(title)
     header.appendChild(time)
 
-    // Check if chat has unread messages
-    const chatTime = chat.timestamp ? new Date(chat.timestamp).getTime() : 0
-    const lastRead = getLastRead(chat.uri)
-    if (chatTime > lastRead) {
+    // Show unread count badge
+    const unreadCount = getUnreadCount(chat.uri)
+    if (unreadCount > 0) {
       const badge = dom.createElement('div')
       badge.className = 'chat-item-badge'
-      badge.textContent = '●'
+      badge.textContent = unreadCount > 99 ? '99+' : unreadCount
       header.appendChild(badge)
     }
 
@@ -979,4 +995,4 @@ export const chatListPane = {
 }
 
 // Export for use in index.html
-export { addChat, removeChat, updateChatPreview, setLastRead }
+export { addChat, removeChat, updateChatPreview, setLastRead, incrementUnread, resetUnread }
