@@ -19,6 +19,28 @@ const MEETING = {
 
 // Storage key for localStorage
 const STORAGE_KEY = 'solidchat-chats'
+const LASTREAD_KEY = 'solidchat-lastread'
+
+// Get last read timestamp for a chat
+function getLastRead(uri) {
+  try {
+    const data = JSON.parse(localStorage.getItem(LASTREAD_KEY) || '{}')
+    return data[uri] || 0
+  } catch {
+    return 0
+  }
+}
+
+// Set last read timestamp for a chat
+function setLastRead(uri) {
+  try {
+    const data = JSON.parse(localStorage.getItem(LASTREAD_KEY) || '{}')
+    data[uri] = Date.now()
+    localStorage.setItem(LASTREAD_KEY, JSON.stringify(data))
+  } catch (e) {
+    console.warn('Failed to save lastRead:', e)
+  }
+}
 
 // Default global chats
 const DEFAULT_CHATS = [
@@ -162,6 +184,21 @@ const styles = `
   font-size: 12px;
   color: var(--text-muted);
   flex-shrink: 0;
+}
+
+.chat-item-badge {
+  background: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  margin-left: 8px;
 }
 
 .chat-item-preview {
@@ -555,6 +592,16 @@ function renderChatList() {
     header.appendChild(title)
     header.appendChild(time)
 
+    // Check if chat has unread messages
+    const chatTime = chat.timestamp ? new Date(chat.timestamp).getTime() : 0
+    const lastRead = getLastRead(chat.uri)
+    if (chatTime > lastRead) {
+      const badge = dom.createElement('div')
+      badge.className = 'chat-item-badge'
+      badge.textContent = '●'
+      header.appendChild(badge)
+    }
+
     const preview = dom.createElement('div')
     preview.className = 'chat-item-preview'
     preview.textContent = chat.lastMessage || 'No messages yet'
@@ -577,6 +624,7 @@ function renderChatList() {
 
     item.onclick = () => {
       activeUri = chat.uri
+      setLastRead(chat.uri)
       renderChatList()
       if (onSelectCallback) {
         onSelectCallback(chat.uri)
@@ -931,4 +979,4 @@ export const chatListPane = {
 }
 
 // Export for use in index.html
-export { addChat, removeChat, updateChatPreview }
+export { addChat, removeChat, updateChatPreview, setLastRead }
