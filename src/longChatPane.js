@@ -1189,10 +1189,44 @@ export const longChatPane = {
       try {
         const authFetch = context.authFetch ? context.authFetch() : fetch
         const doc = subject.doc ? subject.doc() : subject
-
-        // Build SPARQL DELETE for all statements about this message
         const msgUri = message.uri
-        const deleteQuery = `DELETE WHERE { <${msgUri}> ?p ?o . }`
+
+        // Get all triples about this message from the store
+        const msgNode = store.sym(msgUri)
+        const statements = store.statementsMatching(msgNode, null, null, doc)
+
+        if (statements.length === 0) {
+          throw new Error('No statements found for this message')
+        }
+
+        // Build DELETE DATA with explicit triples (more compatible than DELETE WHERE with variables)
+        const triples = statements.map(st => {
+          const obj = st.object
+          let objStr
+          if (obj.termType === 'NamedNode') {
+            objStr = `<${obj.value}>`
+          } else if (obj.termType === 'Literal') {
+            // Escape special characters in literal value (Turtle escaping)
+            const escaped = obj.value
+              .replace(/\\/g, '\\\\')
+              .replace(/"/g, '\\"')
+              .replace(/\n/g, '\\n')
+              .replace(/\r/g, '\\r')
+              .replace(/\t/g, '\\t')
+            if (obj.datatype && obj.datatype.value !== 'http://www.w3.org/2001/XMLSchema#string') {
+              objStr = `"${escaped}"^^<${obj.datatype.value}>`
+            } else if (obj.language) {
+              objStr = `"${escaped}"@${obj.language}`
+            } else {
+              objStr = `"${escaped}"`
+            }
+          } else {
+            objStr = `"${obj.value}"`
+          }
+          return `<${st.subject.value}> <${st.predicate.value}> ${objStr} .`
+        }).join('\n')
+
+        const deleteQuery = `DELETE DATA {\n${triples}\n}`
 
         const response = await authFetch(doc.value || doc.uri, {
           method: 'PATCH',
