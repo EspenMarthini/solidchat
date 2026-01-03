@@ -135,6 +135,24 @@ const styles = `
   background: rgba(255,255,255,0.3);
 }
 
+.sound-toggle-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.sound-toggle-btn:hover {
+  color: white;
+  background: rgba(255,255,255,0.15);
+}
+
 .chat-list {
   flex: 1;
   overflow-y: auto;
@@ -923,13 +941,33 @@ export const chatListPane = {
     title.className = 'sidebar-title'
     title.textContent = 'Chats'
 
+    // Sound toggle button (subtle white bell like Telegram)
+    const soundBtn = dom.createElement('button')
+    soundBtn.className = 'sound-toggle-btn'
+    soundBtn.id = 'soundToggle'
+    soundBtn.title = 'Toggle notification sound'
+    soundBtn.innerHTML = localStorage.getItem('solidchat-sound') !== 'false'
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/><path d="M3.27 3L2 4.27l2.92 2.92C4.34 8.16 4 9.5 4 11v5l-2 2v1h14.73l2 2L20 19.73 3.27 3z"/></svg>'
+    soundBtn.onclick = () => {
+      if (window.toggleSound) {
+        window.toggleSound()
+      }
+    }
+
     const addBtn = dom.createElement('button')
     addBtn.className = 'add-chat-btn'
     addBtn.textContent = '+'
     addBtn.title = 'Add or create chat'
     addBtn.onclick = () => showAddModal(dom, options.webId)
 
-    header.appendChild(title)
+    // Group title and sound button together (flush)
+    const titleGroup = dom.createElement('div')
+    titleGroup.style.cssText = 'display: flex; align-items: center; gap: 8px;'
+    titleGroup.appendChild(title)
+    titleGroup.appendChild(soundBtn)
+
+    header.appendChild(titleGroup)
     header.appendChild(addBtn)
 
     // Chat list

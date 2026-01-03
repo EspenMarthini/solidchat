@@ -68,7 +68,6 @@
           </div>
         </div>
         <div class="header-actions">
-          <button class="icon-btn" id="soundToggle" title="Toggle notification sound">🔔</button>
         </div>
       </div>
 
@@ -425,7 +424,11 @@ function toggleSound() {
 
 function updateSoundButton() {
   const btn = document.getElementById('soundToggle')
-  if (btn) btn.textContent = soundEnabled ? '🔔' : '🔕'
+  if (btn) {
+    btn.innerHTML = soundEnabled
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2"/></svg>'
+  }
 }
 
 // Subscribe to real-time updates for a resource
@@ -914,15 +917,14 @@ function showToast(message) {
 
 // Make createChat and copyShareLink available globally for chatListPane
 window.solidChat = { createChat, copyShareLink, getMyPodRoot }
+window.toggleSound = toggleSound
 
 // Initialize: handle auth redirect first, then render sidebar
 async function init() {
   // Initialize theme
   initTheme()
 
-  // Set initial sound button state
-  updateSoundButton()
-  document.getElementById('soundToggle').addEventListener('click', toggleSound)
+  // Sound button is now created in chatListPane with onclick handler
 
   // Clear unread count when user returns to tab
   document.addEventListener('visibilitychange', () => {
