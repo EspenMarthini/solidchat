@@ -1238,6 +1238,9 @@ export const longChatPane = {
           throw new Error(`Delete failed: ${response.status}`)
         }
 
+        // Remove from local store (prevents ghost re-render on WebSocket refresh)
+        statements.forEach(st => store.remove(st))
+
         // Remove from UI
         rowEl.remove()
         renderedUris.delete(message.uri)
