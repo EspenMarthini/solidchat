@@ -498,7 +498,7 @@ async function subscribeWebSocketChannel2023(uri, authFetch) {
       if (document.hidden) {
         incrementUnread(uri)
       }
-      setTimeout(() => refreshChat(), 500)
+      setTimeout(() => refreshChat(), 1500)
     }
 
     currentWebSocket.onclose = () => {
@@ -538,7 +538,7 @@ function connectLegacyWebSocket(updatesVia, uri) {
         if (document.hidden) {
           incrementUnread(uri)
         }
-        setTimeout(() => refreshChat(), 500)
+        setTimeout(() => refreshChat(), 1500)
       }
     }
   }

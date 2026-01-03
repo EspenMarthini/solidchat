@@ -1249,6 +1249,10 @@ export const longChatPane = {
 
         console.log('[delete] Delete successful, updating local state')
 
+        // Show brief success indicator
+        statusEl.textContent = '✓ Deleted'
+        setTimeout(() => { statusEl.textContent = `${messages.length - 1} messages` }, 1000)
+
         // Remove from local store (prevents ghost re-render on WebSocket refresh)
         statements.forEach(st => store.remove(st))
 
@@ -1256,10 +1260,11 @@ export const longChatPane = {
         rowEl.remove()
         renderedUris.delete(message.uri)
         messages = messages.filter(m => m.uri !== message.uri)
-        statusEl.textContent = `${messages.length} messages`
 
       } catch (err) {
         console.error('Delete error:', err)
+        statusEl.textContent = '✗ Delete failed'
+        setTimeout(() => { statusEl.textContent = `${messages.length} messages` }, 2000)
         alert('Failed to delete: ' + err.message)
       }
     }
