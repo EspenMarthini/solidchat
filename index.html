@@ -381,7 +381,7 @@ let reconnectTimeout = null
 let soundEnabled = localStorage.getItem('solidchat-sound') !== 'false'
 
 function playNotificationSound() {
-  if (!soundEnabled || !document.hidden) return
+  if (!soundEnabled) return
 
   const ctx = new AudioContext()
 
