@@ -659,6 +659,9 @@ async function loadChat(uri) {
     currentChatUri = uri
     subscribeToUpdates(uri)
 
+    // Remember current chat for page refresh
+    localStorage.setItem('solidchat-current-room', uri)
+
   } catch (err) {
     console.error('Error loading chat:', err)
     chatContainer.innerHTML = `
@@ -1042,13 +1045,14 @@ async function init() {
     discoverBtn.parentNode.insertBefore(themeSelect.parentNode, discoverBtn)
   }
 
-  // Check for ?chat= deep link first, then ?uri= (legacy), then default
+  // Check for ?chat= deep link first, then ?uri= (legacy), then saved room, then default
   const deepLinkedChat = await handleDeepLink()
   if (deepLinkedChat) {
     loadChat(deepLinkedChat)
   } else {
     const params = new URLSearchParams(window.location.search)
-    const initialUri = params.get('uri') || DEFAULT_CHAT_URI
+    const savedRoom = localStorage.getItem('solidchat-current-room')
+    const initialUri = params.get('uri') || savedRoom || DEFAULT_CHAT_URI
     loadChat(initialUri)
   }
 }
