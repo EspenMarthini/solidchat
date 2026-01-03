@@ -216,18 +216,18 @@ async function handleAuthRedirect() {
 
     if (currentSession.info.isLoggedIn) {
       currentWebId = currentSession.info.webId
-      updateAuthUI(true)
+      await updateAuthUI(true)
     } else {
-      updateAuthUI(false)
+      await updateAuthUI(false)
     }
   } catch (err) {
     console.error('Auth redirect error:', err)
-    updateAuthUI(false)
+    await updateAuthUI(false)
   }
 }
 
 // Update UI based on auth state
-function updateAuthUI(isLoggedIn) {
+async function updateAuthUI(isLoggedIn) {
   if (isLoggedIn && currentWebId) {
     const shortId = currentWebId.split('//')[1]?.split('/')[0] || currentWebId
     userStatus.innerHTML = `Logged in as <a href="${currentWebId}" target="_blank">${shortId}</a>`
@@ -237,6 +237,12 @@ function updateAuthUI(isLoggedIn) {
     // Update avatar with user initial
     const initial = shortId.charAt(0).toUpperCase()
     document.getElementById('userAvatar').textContent = initial
+
+    // Add Saved Messages to chat list (pinned at top)
+    const savedMessagesUrl = await ensureSavedMessagesChat()
+    if (savedMessagesUrl) {
+      addChat(savedMessagesUrl, '📌 Saved Messages', 'Private notes to yourself')
+    }
   } else {
     userStatus.textContent = 'Not logged in'
     loginArea.innerHTML = `
@@ -280,7 +286,7 @@ async function handleLogout() {
     await logout()
     currentSession = null
     currentWebId = null
-    updateAuthUI(false)
+    await updateAuthUI(false)
   } catch (err) {
     console.error('Logout error:', err)
   }
@@ -762,6 +768,88 @@ async function setPublicReadACL(resourceUrl) {
   } catch (e) {
     console.warn('Failed to set ACL (might already exist):', e)
   }
+}
+
+// Set private ACL (owner-only) for Saved Messages
+async function setPrivateACL(resourceUrl) {
+  const aclUrl = resourceUrl + '.acl'
+  const authFetch = getAuthFetch()
+
+  const acl = `@prefix acl: <http://www.w3.org/ns/auth/acl#>.
+
+<#owner>
+    a acl:Authorization ;
+    acl:agent <${currentWebId}> ;
+    acl:accessTo <${resourceUrl}> ;
+    acl:mode acl:Read, acl:Write, acl:Control .
+`
+
+  try {
+    await authFetch(aclUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'text/turtle' },
+      body: acl
+    })
+  } catch (e) {
+    console.warn('Failed to set private ACL:', e)
+  }
+}
+
+// Get URI for Saved Messages chat
+function getSavedMessagesUri(podRoot) {
+  return podRoot + 'private/saved-messages/chat.ttl'
+}
+
+// Ensure Saved Messages chat exists, create if not
+async function ensureSavedMessagesChat() {
+  if (!currentWebId) return null
+
+  const podRoot = await getMyPodRoot()
+  if (!podRoot) return null
+
+  const chatUrl = getSavedMessagesUri(podRoot)
+  const authFetch = getAuthFetch()
+
+  // Check if chat already exists
+  try {
+    const response = await authFetch(chatUrl, { method: 'HEAD' })
+    if (response.ok) {
+      return chatUrl // Already exists
+    }
+  } catch (e) {
+    // Doesn't exist, create it
+  }
+
+  // Create the chat
+  const now = new Date().toISOString()
+  const turtle = `@prefix dct: <http://purl.org/dc/terms/>.
+@prefix meeting: <http://www.w3.org/ns/pim/meeting#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+<>
+    a meeting:LongChat ;
+    dct:title "Saved Messages" ;
+    dct:created "${now}"^^xsd:dateTime .
+`
+
+  try {
+    const response = await authFetch(chatUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'text/turtle' },
+      body: turtle
+    })
+
+    if (response.ok) {
+      // Set private ACL
+      await setPrivateACL(chatUrl)
+      console.log('Created Saved Messages chat:', chatUrl)
+      return chatUrl
+    }
+  } catch (e) {
+    console.warn('Failed to create Saved Messages chat:', e)
+  }
+
+  return null
 }
 
 // Register chat in user's Type Index
