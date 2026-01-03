@@ -156,7 +156,7 @@ const styles = `
 .chat-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 0 0 8px 0;
 }
 
 .chat-item {
