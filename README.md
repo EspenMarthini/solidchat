@@ -21,7 +21,7 @@ Modern, decentralized chat app built on the [Solid](https://solidproject.org) pr
 ### Real-time
 - WebSocket updates (NSS `Updates-Via` header)
 - WebSocketChannel2023 support (CSS/solidcommunity.net)
-- Notification sounds when tab is hidden (toggleable)
+- Notification sounds (toggleable)
 
 ### Messaging
 - Send and receive messages
@@ -56,6 +56,19 @@ Modern, decentralized chat app built on the [Solid](https://solidproject.org) pr
 - Clickable timestamps (permalinks to message URI)
 - "(edited)" indicator for edited messages
 - Message count in header
+- Unread message badges
+- Remember current room across refreshes
+
+### Themes
+- Wave (WhatsApp-style green)
+- Signal (clean blue)
+- Telegram (blue with patterns)
+- Solid (purple/gradient)
+
+### Saved Messages
+- Telegram-style "notes to self"
+- Auto-created on your pod
+- Private by default
 
 ## Quick Start
 
@@ -154,11 +167,15 @@ This app implements the [Solid Chat specification](https://solid.github.io/chat/
 - [x] Create new chats
 - [x] Deep link sharing (`?chat=<url>`)
 - [x] Type Index registration
+- [x] Mobile responsive sidebar
+- [x] Unread message badges
+- [x] Theme support
+- [x] Saved Messages
 - [ ] @mentions with notifications
 - [ ] End-to-end encryption
-- [ ] Mobile responsive sidebar
-- [ ] Unread message badges
 - [ ] Message search
+- [ ] Push notifications
+- [ ] Offline support
 
 ## License
 
