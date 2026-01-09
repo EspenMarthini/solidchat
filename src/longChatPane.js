@@ -24,6 +24,12 @@ const FLOW = {
   Message: 'http://www.w3.org/2005/01/wf/flow#Message'
 }
 
+const MENTION_RE = /@\{([^}]+)\}/g
+const MENTION_TRIGGER = /@([^\s@{]*)$/
+let mentionIndex = -1
+let mentionMatches = []
+
+
 // CSS styles as a string (will be injected)
 const styles = `
 .long-chat-pane {
@@ -366,6 +372,54 @@ const styles = `
   padding: 20px;
   color: var(--text-muted);
 }
+
+.mention {
+  color: #5a67d8;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mention:hover {
+  text-decoration: underline;
+}
+
+.mention-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 60px;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  border: 1px solid #e2e8f0;
+  min-width: 220px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 200;
+}
+
+.mention-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.mention-item:hover,
+.mention-item.active {
+  background: #edf2ff;
+}
+
+.mention-name {
+  font-weight: 600;
+  color: #4c51bf;
+}
+
+.mention-webid {
+  font-size: 12px;
+  color: #718096;
+}
+
 `
 
 // Inject styles once
@@ -449,7 +503,7 @@ function createMessageElement(dom, message, isOwn) {
 
   const text = dom.createElement('div')
   text.className = 'message-text'
-  text.textContent = message.content || ''
+  text.appendChild(renderMessageContent(dom, message.content || ''))
   bubble.appendChild(text)
 
   const meta = dom.createElement('div')
@@ -464,6 +518,45 @@ function createMessageElement(dom, message, isOwn) {
   row.appendChild(bubble)
 
   return row
+}
+
+function renderMessageContent(dom, content) {
+  const frag = dom.createDocumentFragment()
+  let lastIndex = 0
+
+  content.replace(MENTION_RE, (match, webId, index) => {
+    // tekst før mention
+    if (index > lastIndex) {
+      frag.appendChild(dom.createTextNode(content.slice(lastIndex, index)))
+    }
+
+    // mention element
+    const a = dom.createElement('a')
+    a.className = 'mention'
+    a.href = webId
+    a.textContent = '@' + shortenWebId(webId)
+    a.target = '_blank'
+    a.rel = 'noopener'
+    frag.appendChild(a)
+
+    lastIndex = index + match.length
+  })
+
+  // resttekst
+  if (lastIndex < content.length) {
+    frag.appendChild(dom.createTextNode(content.slice(lastIndex)))
+  }
+
+  return frag
+}
+
+function shortenWebId(webId) {
+  try {
+    const u = new URL(webId)
+    return u.hostname.split('.')[0]
+  } catch {
+    return webId
+  }
 }
 
 // Main pane definition
@@ -520,6 +613,7 @@ export const longChatPane = {
   },
 
   render: function(subject, context, options) {
+    let mentionStartIndex = null
     const dom = context.dom
     const store = context.session.store
     const $rdf = store.rdflib || globalThis.$rdf
@@ -587,6 +681,11 @@ export const longChatPane = {
     emojiPicker.appendChild(emojiGrid)
     inputArea.appendChild(emojiPicker)
 
+    const mentionPopup = dom.createElement('div')
+    mentionPopup.className = 'mention-popup'
+    mentionPopup.style.display = 'none'
+    inputArea.appendChild(mentionPopup)
+
     // Emoji button
     const emojiBtn = dom.createElement('button')
     emojiBtn.className = 'emoji-btn'
@@ -596,6 +695,49 @@ export const longChatPane = {
       emojiPicker.classList.toggle('open')
     }
     inputArea.appendChild(emojiBtn)
+
+    function renderMentionPopup(items) {
+      mentionPopup.innerHTML = ''
+      mentionIndex = -1
+
+      if (!items.length) {
+        mentionPopup.style.display = 'none'
+        return
+      }
+
+      items.forEach((item, i) => {
+        const el = dom.createElement('div')
+        el.className = 'mention-item'
+        el.innerHTML = `
+          <div class="mention-name">${item.name}</div>
+          <div class="mention-webid">${item.webId}</div>
+        `
+
+        el.onmousedown = e => e.preventDefault()
+        el.onclick = () => insertMention(item)
+        mentionPopup.appendChild(el)
+      })
+
+      mentionPopup.style.display = 'block'
+    }
+
+    function insertMention(person) {
+      if (mentionStartIndex == null) return
+
+      const value = input.value
+      const caret = input.selectionStart
+
+      const before = value.slice(0, mentionStartIndex)
+      const after = value.slice(caret)
+
+      input.value = `${before}@{${person.webId}} ${after}`
+      input.focus()
+
+      mentionPopup.style.display = 'none'
+      mentionStartIndex = null
+
+      sendBtn.disabled = !input.value.trim()
+    }
 
     const inputWrapper = dom.createElement('div')
     inputWrapper.className = 'input-wrapper'
@@ -630,6 +772,23 @@ export const longChatPane = {
     const authn = context.session?.logic?.authn || globalThis.SolidLogic?.authn
     if (authn) {
       currentUser = authn.currentUser()?.value
+    }
+
+    let mentionCandidates = []
+
+    function rebuildMentionCandidates() {
+      const map = new Map()
+
+      messages.forEach(m => {
+        if (m.authorUri) {
+          map.set(m.authorUri, {
+            webId: m.authorUri,
+            name: m.author || shortenWebId(m.authorUri)
+          })
+        }
+      })
+
+      mentionCandidates = [...map.values()]
     }
 
     // Load messages from store
@@ -719,6 +878,8 @@ export const longChatPane = {
           }
         }
 
+        rebuildMentionCandidates()
+
         statusEl.textContent = `${messages.length} messages`
 
         // Scroll to bottom
@@ -760,10 +921,12 @@ export const longChatPane = {
         const DCT = ns('http://purl.org/dc/terms/')
         const FOAF = ns('http://xmlns.com/foaf/0.1/')
         const RDF = ns('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+        const SCHEMA = ns('http://schema.org/')
 
         const msgId = `#msg-${Date.now()}`
         const msgNode = $rdf.sym(subject.uri + msgId)
         const now = new Date().toISOString()
+        const mentionedWebIds = [...text.matchAll(MENTION_RE)].map(m => m[1])
 
         const ins = [
           $rdf.st(subject, FLOW('message'), msgNode, subject.doc()),
@@ -775,6 +938,17 @@ export const longChatPane = {
         if (currentUser) {
           ins.push($rdf.st(msgNode, FOAF('maker'), $rdf.sym(currentUser), subject.doc()))
         }
+
+        mentionedWebIds.forEach(webId => {
+          ins.push(
+            $rdf.st(
+              msgNode,
+              SCHEMA('mentions'),
+              $rdf.sym(webId),
+              subject.doc()
+            )
+          )
+        })
 
         await store.updater.update([], ins)
 
@@ -814,6 +988,27 @@ export const longChatPane = {
     // Event listeners
     input.addEventListener('input', () => {
       sendBtn.disabled = !input.value.trim()
+
+      const caret = input.selectionStart
+      const before = input.value.slice(0, caret)
+      const match = before.match(MENTION_TRIGGER)
+      if (match) {
+        mentionStartIndex = caret - match[0].length
+      }
+
+      if (match) {
+        const q = match[1].toLowerCase()
+
+        mentionMatches = mentionCandidates.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          p.webId.toLowerCase().includes(q)
+        )
+
+        renderMentionPopup(mentionMatches)
+      } else {
+        mentionPopup.style.display = 'none'
+      }
+
       input.style.height = 'auto'
       input.style.height = Math.min(input.scrollHeight, 100) + 'px'
     })
@@ -822,6 +1017,26 @@ export const longChatPane = {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         sendMessage()
+      }
+      if (mentionPopup.style.display === 'block') {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          mentionIndex = (mentionIndex + 1) % mentionMatches.length
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          mentionIndex = (mentionIndex - 1 + mentionMatches.length) % mentionMatches.length
+        }
+        if (e.key === 'Enter' && mentionIndex >= 0) {
+          e.preventDefault()
+          insertMention(mentionMatches[mentionIndex])
+          return
+        }
+
+        const items = mentionPopup.querySelectorAll('.mention-item')
+        items.forEach((el, i) =>
+          el.classList.toggle('active', i === mentionIndex)
+        )
       }
     })
 
