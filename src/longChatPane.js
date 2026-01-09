@@ -749,13 +749,15 @@ function renderMessageContent(dom, content) {
   const tokens = []
   let lastIndex = 0
 
-  content.replace(MENTION_RE, (match, bracedWebId, plainWebId, index) => {
-    const webId = bracedWebId || plainWebId  // Use whichever captured
-    if (index > lastIndex) {
-      tokens.push({ type: 'text', value: content.slice(lastIndex, index) })
+  content.replace(MENTION_RE, (match, bracedWebId, plainWebId, offset) => {
+    const webId = bracedWebId || plainWebId
+
+    if (offset > lastIndex) {
+      tokens.push({ type: 'text', value: content.slice(lastIndex, offset) })
     }
+
     tokens.push({ type: 'mention', webId })
-    lastIndex = index + match.length
+    lastIndex = offset + match.length
   })
 
   if (lastIndex < content.length) {
