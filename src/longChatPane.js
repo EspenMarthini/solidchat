@@ -784,57 +784,47 @@ function renderMessageContent(dom, content) {
       if (URL_REGEX.test(part)) {
         URL_REGEX.lastIndex = 0
 
-        // Image
-        if (IMAGE_EXT.test(part)) {
-          const wrapper = dom.createElement('div')
-          wrapper.className = 'media-wrapper'
+      // Image
+      if (IMAGE_EXT.test(part)) {
+        const wrapper = dom.createElement('div')
+        wrapper.className = 'media-wrapper'
 
-          const img = dom.createElement('img')
-          img.src = part
-          img.alt = 'Image'
-          img.loading = 'lazy'
-          img.onclick = () => window.open(part, '_blank')
-          img.onload = () => {
-            const mc = wrapper.closest('.messages-container')
-            if (mc) mc.scrollTop = mc.scrollHeight
-          }
-
-          wrapper.appendChild(img)
-          container.appendChild(wrapper)
-
-        // Video
-        } else if (VIDEO_EXT.test(part)) {
-          const wrapper = dom.createElement('div')
-          wrapper.className = 'media-wrapper'
-          const video = dom.createElement('video')
-          video.src = part
-          video.controls = true
-          video.preload = 'metadata'
-          wrapper.appendChild(video)
-          container.appendChild(wrapper)
-
-        // Audio
-        } else if (AUDIO_EXT.test(part)) {
-          const wrapper = dom.createElement('div')
-          wrapper.className = 'media-wrapper'
-          const audio = dom.createElement('audio')
-          audio.src = part
-          audio.controls = true
-          audio.preload = 'metadata'
-          wrapper.appendChild(audio)
-          container.appendChild(wrapper)
-
-        // Regular link
-        } else {
-          const link = dom.createElement('a')
-          link.href = part
-          link.textContent = part.length > 50 ? part.slice(0, 50) + '...' : part
-          link.target = '_blank'
-          link.rel = 'noopener noreferrer'
-          container.appendChild(link)
+        const img = dom.createElement('img')
+        img.src = part
+        img.alt = 'Image'
+        img.loading = 'lazy'
+        img.onclick = () => window.open(part, '_blank')
+        img.onload = () => {
+          const mc = wrapper.closest('.messages-container')
+          if (mc) mc.scrollTop = mc.scrollHeight
         }
 
-      // Regular text (markdown)
+        wrapper.appendChild(img)
+        container.appendChild(wrapper)
+
+      // Video
+      } else if (VIDEO_EXT.test(part)) {
+        const wrapper = dom.createElement('div')
+        wrapper.className = 'media-wrapper'
+        const video = dom.createElement('video')
+        video.src = part
+        video.controls = true
+        video.preload = 'metadata'
+        wrapper.appendChild(video)
+        container.appendChild(wrapper)
+
+      // Audio
+      } else if (AUDIO_EXT.test(part)) {
+        const wrapper = dom.createElement('div')
+        wrapper.className = 'media-wrapper'
+        const audio = dom.createElement('audio')
+        audio.src = part
+        audio.controls = true
+        audio.preload = 'metadata'
+        wrapper.appendChild(audio)
+        container.appendChild(wrapper)
+
+        // Regular link
       } else if (part) {
         const span = dom.createElement('span')
         span.innerHTML = parseMarkdown(part)
