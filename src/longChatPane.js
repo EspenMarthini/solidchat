@@ -738,7 +738,6 @@ function parseMarkdown(text) {
 function renderMessageContent(dom, content) {
   const container = dom.createElement('div')
 
-  // 1. Først: erstatt @{webId} med placeholder-noder
   const tokens = []
   let lastIndex = 0
 
@@ -767,27 +766,42 @@ function renderMessageContent(dom, content) {
       continue
     }
 
-    // vanlig tekst → URL / media / markdown
     const parts = token.value.split(URL_REGEX)
 
     for (const part of parts) {
+      // URL-del
       if (URL_REGEX.test(part)) {
         URL_REGEX.lastIndex = 0
 
+        // Bilde
         if (IMAGE_EXT.test(part)) {
+          const wrapper = dom.createElement('div')
+          wrapper.className = 'media-wrapper'
+
           const img = dom.createElement('img')
           img.src = part
-          img.className = 'media-wrapper'
+          img.alt = 'Image'
           img.loading = 'lazy'
-          container.appendChild(img)
+          img.onclick = () => window.open(part, '_blank')
+          img.onload = () => {
+            const mc = wrapper.closest('.messages-container')
+            if (mc) mc.scrollTop = mc.scrollHeight
+          }
+
+          wrapper.appendChild(img)
+          container.appendChild(wrapper)
+
+        // Vanlig lenke
         } else {
           const link = dom.createElement('a')
           link.href = part
-          link.textContent = part
+          link.textContent = part.length > 50 ? part.slice(0, 50) + '...' : part
           link.target = '_blank'
           link.rel = 'noopener noreferrer'
           container.appendChild(link)
         }
+
+      // Vanlig tekst (markdown)
       } else if (part) {
         const span = dom.createElement('span')
         span.innerHTML = parseMarkdown(part)
