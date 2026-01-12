@@ -24,7 +24,6 @@ const FLOW = {
   Message: 'http://www.w3.org/2005/01/wf/flow#Message'
 }
 
-// Matches @{webId} or @https://... (without braces)
 const MENTION_RE = /@\{([^}]+)\}|@(https?:\/\/[^\s]+)/g
 const MENTION_TRIGGER = /@([^\s@{]*)$/
 let mentionIndex = -1
