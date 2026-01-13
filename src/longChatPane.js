@@ -836,8 +836,8 @@ function renderMessageContent(dom, content) {
         span.innerHTML = parseMarkdown(part)
         container.appendChild(span)
       }
+    }
   }
-
   return container
 }
 
